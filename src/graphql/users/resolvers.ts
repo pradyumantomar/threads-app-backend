@@ -8,6 +8,14 @@ const queries = {
     const token = await UserService.getUserToken(payload);
     return token;
   },
+  getCurrentUserLoggedIn: async (_: any, paramter: any, context: any) => {
+    if (context && context.user) {
+      const userId = context.user.id;
+      const user = await UserService.getUserById(userId);
+      return user;
+    }
+    throw new Error("UnAuthorized User not Allowed");
+  },
 };
 
 const mutations = {

@@ -1,6 +1,8 @@
 import express from "express";
 import { expressMiddleware } from "@apollo/server/express4";
 import createApolloGraphqlServer from "./graphql";
+import UserService from "./services/user";
+import { randomInt } from "crypto";
 
 async function init() {
   const app = express();
@@ -15,7 +17,22 @@ async function init() {
   );
 
   const gqlServer = await createApolloGraphqlServer();
-  app.use("/graphql", expressMiddleware(gqlServer));
+  app.use(
+    "/graphql",
+    expressMiddleware(gqlServer, {
+      context: async ({ req }) => {
+        const token = req.headers["token"];
+
+        try {
+          const user = UserService.decodeJwtToken(token as string);
+
+          return { user };
+        } catch (error) {
+          return "UnAuthorized User";
+        }
+      },
+    })
+  );
 
   app.listen(PORT, () => console.log(`Server is running at Port : ${PORT} 😎`));
 }
